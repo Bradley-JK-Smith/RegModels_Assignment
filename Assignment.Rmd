@@ -1,0 +1,94 @@
+---
+title: "Automatic vs Manual transmissions"
+# Maybe put the finding in the title
+author: "Bradley JK Smith"
+output: html_document
+---
+## Summary
+Based on the mtcars dataset, a manual transmission improves fuel consumption by 5.3 miles per gallon. The 95% confidence interval is 3.1 to 7.5.
+
+## Background
+
+From the help file "The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models)."
+
+A version of mtcars dataset was created with discrete variables converted to factors. The 'am' variable is labelled so this appears on the graphs.
+```{r setup}
+suppressPackageStartupMessages({library(ggplot2,quietly=TRUE)})
+x <- mtcars
+cols <- c('cyl', 'vs', 'gear', 'carb'); x[cols] <- lapply(x[cols], factor)
+x$am <- factor(x$am, levels = c(0,1), labels = c('automatic', 'manual'))
+```
+
+An analysis of the data set including a boxplot of mpg against transmission type and graphs of mpg against each variable are given in the Appendix.
+
+## Model #1
+
+The starting point is a model where mpg is assumed to vary based just type of transmission. In this case, all the other aspects of the cars are ignored. 
+
+```{r model1}
+fit1 <- lm(mpg ~ am, data = x)
+summary(fit1)$coefficients
+```
+
+Intercept is at mean value for 'automatic' (as this is the base level of the factor), the 'ammanual' coefficient is the slope between the 2 factor levels so Intercept + slope is mean of 'manual'. Based on this, would say that 'manual' gives better mpg (ie. higher) than 'automatic'. The difference would be quantified as 7.245 mpg. At 95% confidence level, the t-value on 'ammanual' (4.106) shows that the difference in mpg between manual and automatic for this dataset is not zero. p-value comes in at much less that this. 
+
+This is a very, very simple model and same results would be obtained from a few calculations. In fact, the intercept and slopes values could be simply read off the box plot and the confidence interval calculated from a t test.
+
+The adjusted R-squared is low at 0.3385 which indicates that just using the transmission type is not providing much information.  
+
+## Model #2
+A fit against all variables was made and the variance with each factor was analysed. The table is given in the Appendix. Horsepower was selected as the variable to model. This has data that covers a fuller range when the data is split into manual and automatic categories. Weight and displacement look promising BUT there is little overlap when the data is separated into the transmission types. Graphs are given in the Appendix.
+
+The model used has no interaction term - the assumption is that the slope (the change in mpg with horsepower is independent of the transmission type).
+
+```{r model2}
+fit2 <- lm(mpg ~ hp + am, data = x)
+sumCoef <- summary(fit2)$coefficients; print(sumCoef, digits = 4)
+sumCoef[3,1] + c(-1, 0, 1) * qt(0.975, df= fit2$df) * sumCoef[3,2]
+```
+
+From the model, the estimate of the difference im mpg between manual and automatic (keeping horsepower constant) is 5.3 with a 95% confidence interval of 3.1 to 7.5. This is smaller than the value estimated using the very simple model but of similar magnitude.
+
+The residuals of the fit are given in the Appendix. These are randomly distributed around the zero of the x-axis and so there seems to be no issue with having a poor model fit.
+
+```{r fig.width = 7, fig.height = 4}
+ggplot(x, aes(hp, mpg, colour = am)) + geom_point() +
+  geom_abline(intercept=fit2$coeff[1], slope = fit2$coeff[2], colour = 'red') +
+  geom_abline(intercept=fit2$coeff[1]+fit2$coeff[3], slope = fit2$coeff[2], colour = 'blue')
+```
+
+## Appendix
+
+### Data
+
+```{r data}
+str(x)
+```
+
+### Boxplot
+
+```{r boxplot}
+qplot(am, mpg, data = x, geom = 'boxplot')
+```
+
+## Candidate models
+
+```{r ALL}
+fitALL <- lm(mpg ~ . , data = x)
+anova(fitALL)
+```
+
+## MPG against other parameters
+
+```{r multiple_plot}
+qplot(wt, mpg, colour = am, data = x)
+qplot(disp, mpg, colour = am, data = x)
+```
+
+## Residuals
+
+```{r plot_residuals}
+plot((fit2))
+```
+
+
