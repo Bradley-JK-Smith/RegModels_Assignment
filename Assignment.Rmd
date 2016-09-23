@@ -37,7 +37,7 @@ This is a very, very simple model and same results would be obtained from a few 
 The adjusted R-squared is low at 0.3385 which indicates that just using the transmission type is not providing much information.  
 
 ## Model #2
-A fit against all variables was made and the variance with each factor was analysed. The table is given in the Appendix. Horsepower was selected as the variable to model. This has data that covers a fuller range when the data is split into manual and automatic categories. Weight and displacement look promising BUT there is little overlap when the data is separated into the transmission types. Graphs are given in the Appendix.
+A fit against all variables was made and the variance with each factor was analysed. Horsepower was selected as the variable to model. This has data that covers a fuller range when the data is split into manual and automatic categories. Weight and displacement look promising BUT there is little overlap when the data is separated into the transmission types. Graphs are given in the Appendix.
 
 The model used has no interaction term - the assumption is that the slope (the change in mpg with horsepower is independent of the transmission type).
 
@@ -59,36 +59,23 @@ ggplot(x, aes(hp, mpg, colour = am)) + geom_point() +
 
 ## Appendix
 
-### Data
-
-```{r data}
-str(x)
-```
-
 ### Boxplot
 
-```{r boxplot}
+```{r fig.width = 7, fig.height = 4}
 qplot(am, mpg, data = x, geom = 'boxplot')
-```
-
-## Candidate models
-
-```{r ALL}
-fitALL <- lm(mpg ~ . , data = x)
-anova(fitALL)
 ```
 
 ## MPG against other parameters
 
-```{r multiple_plot}
+```{r }
 qplot(wt, mpg, colour = am, data = x)
 qplot(disp, mpg, colour = am, data = x)
 ```
 
 ## Residuals
 
-```{r plot_residuals}
-plot((fit2))
+```{r }
+plot(residuals(fit2))
 ```
 
 
